@@ -10,11 +10,11 @@ In my spare time, I currently do a project about music. [Here](http://chordinary
 
 ### Find me everywhere
 
-[Last.fm](https://www.last.fm/user/Sing__Along)
-[Ultimate Guitar](http://profile.ultimate-guitar.com/psfinaki)
-[CouchSurfing](https://couchsurfing.com/people/psfinaki)
-[Goodreads](https://www.goodreads.com/psfinaki)
-[TravelTip](https://traveltip.org/visited.php?psfinaki)
+* [Last.fm](https://www.last.fm/user/Sing__Along)
+* [Ultimate Guitar](http://profile.ultimate-guitar.com/psfinaki)
+* [CouchSurfing](https://couchsurfing.com/people/psfinaki)
+* [Goodreads](https://www.goodreads.com/psfinaki)
+* [TravelTip](https://traveltip.org/visited.php?psfinaki)
 
 ### Something else
 
