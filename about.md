@@ -4,7 +4,9 @@ title: About
 permalink: /about/
 ---
 
-Some information about you!
+Hello, my name is Peter, I am mostly a software developer but have some other interests as well. 
+
+In my spare time, I currently do a project about music. [Here](mailto:email@domain.com) it is and [here](https://github.com/psfinaki/ChordinaryWorld) is the code (beware, F# there).
 
 ### More Information
 
