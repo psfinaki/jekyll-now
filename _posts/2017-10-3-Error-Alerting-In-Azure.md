@@ -91,3 +91,16 @@ The next action to use is _Get blob content using path_:
 For blob path here specify _Path_ from the previous step. After that, Logic App will automatically create Foreach loop for you repeating the following routine for every blob in the list. Currently Logic App looks like this:
 ![Foreach created]({{ site.baseurl }}/images/post-1/foreach-created.png "Foreach created")
 
+### 2.6 Send logs by email
+
+The only thing left is to actually inform somebody about what has happened. 
+
+Logic apps have nice connectors with email services, so I chose _Gmail - Send Email_ action specifying my email address and passing _File Content_ from the previous step to the body of the message.
+
+In the end, the whole logic app looks like this:
+![Whole app]({{ site.baseurl }}/images/post-1/whole-app.png "Whole app")
+
+And if something bad happens in my application, in the end of that hour I receive a message like this:
+![Log alert]({{ site.baseurl }}/images/post-1/log-alert.png "Log alert")
+
+Formatting is not beatiful but the main thing is this message says what has happened and when.
