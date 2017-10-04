@@ -48,7 +48,7 @@ Seems to be just the right thing. But here is the problem. One needs to specify 
 
 It is not possible in this case because with time blobs keep appearing in new folders. The format of their paths is _/year/month/day/hour/_, so new folders may appear every hour. I was desperate to find some wildcards but all in vain. 
 
-So I had to find less elegant solution. I read [this article](http://www.chrisjohnson.io/2016/04/24/parsing-azure-blob-storage-logs-using-azure-functions/) where the guy basically faced the same problem but his approach of solving it seemed too cumbersome for me and too much coding for such a task.
+So I had to find less elegant solution. I read [this article](http://www.chrisjohnson.io/2016/04/24/parsing-azure-blob-storage-logs-using-azure-functions/) where the guy basically faced the same problem but his approach of solving it seemed too cumbersome for me and too much coding for such a task. I applied a different approach.
 
 ### 2.1 Manually schedule the task
 
@@ -104,3 +104,16 @@ And if something bad happens in my application, in the end of that hour I receiv
 ![Log alert]({{ site.baseurl }}/images/post-1/log-alert.png "Log alert")
 
 Formatting is not beatiful but the main thing is this message says what has happened and when.
+
+## Conclusions
+
+So, I would note the following positive moments about my solution:
+* The Logic App seems clear and, well, logical
+* There is some space left for configuration, e.g. the task can be fired more often, the letter can be nicer formatted and so on
+* Little code is required, only one small function with 6 lines of code. No need to track or maintain it
+
+Some drawbacks:
+* 5 steps in the logic app for such a task can seem to be an overkill
+* It is a timer-driven app instead of event-driven. If there is nothing new in the blob storage, failed requests (blobs not found) mess up activity log. Responsibility of checking if the blob is new would lie on the designer of this Logic App.
+
+Although from the first glance it may seem that Azure services can do everything for you, in reality they may be not as flexible as wanted. There is still some space for inner services' integration improvement. Also, I do not really feel comfortable with the idea _"there is more than one way to do it"_ which definitely drives Azure services, but this is obviously a matter of taste.
