@@ -76,3 +76,18 @@ Search for Azure Functions actions and choose the function written in the previo
 
 No advanced parameters are needed, no input needs to be specified.
 
+### 2.4 Get blobs with logs
+
+For this, I used _List blobs_ action:
+![List blobs]({{ site.baseurl }}/images/post-1/list-blobs.png "List blobs")
+
+Logic apps allow to use output from previous steps as input for the current one. Here, I need _Body_ from GetPathToBlobs function response.
+
+### 2.5 Get logs from blobs
+
+The next action to use is _Get blob content using path_:
+![Get logs from blobs]({{ site.baseurl }}/images/post-1/get-logs-from-blobs.png "Get logs from blobs")
+
+For blob path here specify _Path_ from the previous step. After that, Logic App will automatically create Foreach loop for you repeating the following routine for every blob in the list. Currently Logic App looks like this:
+![Foreach created]({{ site.baseurl }}/images/post-1/foreach-created.png "Foreach created")
+
