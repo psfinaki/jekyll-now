@@ -37,3 +37,12 @@ Another good thing about `Trace` class methods is that when the app is running l
 ## 2. Alert errors with Logic App
 
 [Logic Apps](https://docs.microsoft.com/en-us/azure/logic-apps/logic-apps-what-are-logic-apps) are yet another Azure service to automate infrastructural processes. Once I was really impressed by [this video](https://www.youtube.com/watch?v=faIvOYpcUq4) where the guy easily sends emails with Azure and even create Wunderlist tasks which I am a big fan of. So here I decided to give Logic Apps a try.
+
+### So close...
+
+Logic Apps are about intergrating so at first I decided to look if there already exists some trigger about Blob Storages. I searched for "Blob Storage" and... Yes it does exist!
+![Blob Storage Trigger]({{ site.baseurl }}/images/post-1/blob-storage-trigger.png "Blob Storage Trigger")
+
+Seems to be just the right thing. But here is the problem. One needs to specify the exact container path there. It is not possible in this case because with time blobs keep appearing in new folders. I was desperate to find some wildcards but all in vain. 
+
+So I had to find less elegant solution. I found [this article](http://www.chrisjohnson.io/2016/04/24/parsing-azure-blob-storage-logs-using-azure-functions/) where the guy basically faced the same problem but his approach of solving it seemed too cumbersome for me and too much coding for such a task.
