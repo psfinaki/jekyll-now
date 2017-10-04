@@ -32,4 +32,8 @@ A log file is a csv file:
 
 Depending on [privacy settings](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-manage-access-to-resources) in the storage, you can be able to access the blob by link or only to download it from this window. In that file one can see date and time of the message, message itself and a few other things.
 
-Another good things about `Trace` class methods is that when the app is running locally the messages are seen in the Output window. 
+Another good thing about `Trace` class methods is that when the app is running locally the messages are seen in the Output window.
+
+## 2. Alert errors with Logic App
+
+[Logic Apps](https://docs.microsoft.com/en-us/azure/logic-apps/logic-apps-what-are-logic-apps) are yet another Azure service to automate infrastructural processes. Once I was really impressed by [this video](https://www.youtube.com/watch?v=faIvOYpcUq4) where the guy easily sends emails with Azure and even create Wunderlist tasks which I am a big fan of. So here I decided to give Logic Apps a try.
