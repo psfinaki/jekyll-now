@@ -38,19 +38,23 @@ Another good thing about `Trace` class methods is that when the app is running l
 
 ## 2. Alert errors with Logic App
 
-[Logic Apps](https://docs.microsoft.com/en-us/azure/logic-apps/logic-apps-what-are-logic-apps) are yet another Azure service to automate infrastructural processes. Once I was really impressed by [this video](https://www.youtube.com/watch?v=faIvOYpcUq4) where the guy easily sends emails with Azure and even create Wunderlist tasks which I am a big fan of. So here I decided to give Logic Apps a try.
+[Logic Apps](https://docs.microsoft.com/en-us/azure/logic-apps/logic-apps-what-are-logic-apps) are yet another Azure service to manage some collateral routines. Once I was impressed by [this video](https://www.youtube.com/watch?v=faIvOYpcUq4) where the guy easily sends emails from Azure and even creates Wunderlist tasks which I am a big fan of. I decided to give Logic Apps a try.
 
 ### So close...
 
-Logic Apps are about integrating so at first I decided to look if there already exists some trigger about Blob Storages. I searched for "Blob Storage" and... Yes it does exist!
+Logic Apps are about integrating so at first I looked if there already exists some trigger about Blob Storage. I searched for "Blob Storage" and... Yes it exists!
 ![Blob storage trigger]({{ site.baseurl }}/images/post-1/blob-storage-trigger.png "Blob storage trigger")
 
 Seems to be just the right thing. But here is the problem. One needs to specify the exact container path there:
 ![Blob storage trigger: specify container]({{ site.baseurl }}/images/post-1/blob-storage-trigger-specify-container.png "Blob storage trigger: specify container")
 
-It is not possible in this case because with time blobs keep appearing in new folders. New folders may appear every hour. I was desperate to find some wildcards but all in vain. 
+It is not possible in this case because with time blobs keep appearing in new folders. New folders may be created every hour. I was desperate to find some wildcards but all in vain. So, I had to find less elegant solution. 
 
-So, I had to find less elegant solution. I read [this article](http://www.chrisjohnson.io/2016/04/24/parsing-azure-blob-storage-logs-using-azure-functions/) where the guy basically faced the same problem but his approach of solving it seemed too cumbersome for me and too much coding for such a task. I applied a different approach.
+One way was to manually control where log blobs go. That meant I needed to  fall back to logging libraries, [create](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-dotnet-how-to-use-blobs) some _CloudBlobClient_ in code and make it send all the logs in one folder which then could be accessed by the trigger specified above. This is feasible, however I did not like the idea of having all the logs in one folder and also wished to avoid writing code for cross-cutting concerns in my app.
+
+Another approach is to go hard with Azure Functions which can be [integrated](https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-storage-blob) with blob storage as well. [Here](http://www.chrisjohnson.io/2016/04/24/parsing-azure-blob-storage-logs-using-azure-functions/) the guy goes for it when having a similar problem. But I felt it is also too cumbersome and just too much coding for such a task. 
+
+I decided to stick with Logic Apps and see how it goes. Here is my way.
 
 ### 2.1 Manually schedule the task
 
