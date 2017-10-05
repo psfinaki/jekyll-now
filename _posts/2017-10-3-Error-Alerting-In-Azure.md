@@ -50,7 +50,9 @@ Seems to be just the right thing. But here is the problem. One needs to specify 
 
 It is not possible in this case because with time blobs keep appearing in new folders. New folders may be created every hour. I was desperate to find some wildcards but all in vain. So, I had to find less elegant solution. 
 
-One way was to manually control where log blobs go. That meant I needed to  fall back to logging libraries, [create](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-dotnet-how-to-use-blobs) some _CloudBlobClient_ in code and make it send all the logs in one folder which then could be accessed by the trigger specified above. This is feasible, however I did not like the idea of having all the logs in one folder and also wished to avoid writing code for cross-cutting concerns in my app.
+One way was to manually control where log blobs go. That meant I needed to  fall back to logging libraries, [create](https://docs.microsoft.com/en-us/azure/storage/blobs/storage-dotnet-how-to-use-blobs) some _CloudBlobClient_ in code and make it send all the logs in one folder which then could be accessed by the trigger specified above. 
+
+This was feasible, however I did not like the idea of having all the logs in one folder and also wished to avoid writing code for cross-cutting concerns in my app.
 
 Another approach is to go hard with Azure Functions which can be [integrated](https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-storage-blob) with blob storage as well. [Here](http://www.chrisjohnson.io/2016/04/24/parsing-azure-blob-storage-logs-using-azure-functions/) the guy goes for it when having a similar problem. But I felt it is also too cumbersome and just too much coding for such a task. 
 
@@ -58,68 +60,72 @@ I decided to stick with Logic Apps and see how it goes. Here is my way.
 
 ### 2.1 Manually schedule the task
 
-For this, use the _Recurrence_ trigger:
+For this, I used the _Recurrence_ trigger:
 ![Schedule the task]({{ site.baseurl }}/images/post-1/schedule-the-task.png "Schedule the task")
 
-Set it to run every hour in the end of the hour.
+I set it to run at the end of every hour.
 
 ### 2.2 Write Azure Function to format blob path
 
-So, it should be a dumb function basically returning current date and time in some specific format. There are many templates for Azure Functions and not all of them are pluggable to Logic Apps. The simplest working thing is _HttpTrigger_. Choose your language and come up with a clear name like GetPathToBlobs.
+It should be a dumb function returning current date and time in specific format. There are many templates for Azure Functions and not all of them are pluggable to Logic Apps. The simplest working thing is _HttpTrigger_. I chose F# for it called it _GetPathToBlobs_.
 
-Remove all the boilerplate, function should be trivial. This is my code in F#:
+I removed all the boilerplate and here is the code:
 ![Azure Function code]({{ site.baseurl }}/images/post-1/azure-function-code.png "Azure function code")
 
 A few things to consider:
-* Do not remove parameter from the function, it will not compile or will fail in the runtime
-* Use two-digit formatting for months because Azure logging infrastructure puts September logs in the folder _09_ not _9_
-* Use capital _HH_ formatting for hours because Azure logging infrastructure puts 2 p.m. logs in the folder _14_ not _2_ or _02_
+* Parameter should stay in the function, otherwise it fails at compile-time or runtime.
+* Two-digit formatting is used for months as Azure puts September logs in the folder _09_ not _9_.
+* Capital _HH_ formatting is used for hours as Azure puts 2 p.m. logs in the folder _14_ not _2_ or _02_.
 
 ### 2.3 Connect Azure Function to the Logic App
 
-Search for Azure Functions actions and choose the function written in the previous step:
+I searched for Azure Functions actions and selected the function written in the previous step:
 ![Connecting function to logic app]({{ site.baseurl }}/images/post-1/connecting-function-to-logic-app.png "Connecting function to logic app")
 
-No advanced parameters are needed, no input needs to be specified.
+No advanced parameters are needed, no input is to be specified.
 
 ### 2.4 Get blobs with logs
 
 For this, I used _List blobs_ action:
 ![List blobs]({{ site.baseurl }}/images/post-1/list-blobs.png "List blobs")
 
-Logic apps allow to use output from previous steps as input for the current one. Here, I need _Body_ from GetPathToBlobs function response.
+Logic apps allow to use output from previous steps as input for the current one. Here, I need _Body_ from _GetPathToBlobs_ function response.
 
 ### 2.5 Get logs from blobs
 
 The next action to use is _Get blob content using path_:
 ![Get logs from blobs]({{ site.baseurl }}/images/post-1/get-logs-from-blobs.png "Get logs from blobs")
 
-For blob path here specify _Path_ from the previous step. After that, Logic App will automatically create Foreach loop for you repeating the following routine for every blob in the list. Currently Logic App looks like this:
+For blob path I specified _Path_ from the previous step. After that my Logic App automagically created Foreach loop to repeat the routine for every blob in the list. 
+
+At this point, Logic App looked like this:
 ![Foreach created]({{ site.baseurl }}/images/post-1/foreach-created.png "Foreach created")
 
 ### 2.6 Send logs by email
 
-The only thing left is to actually inform somebody about what has happened. 
+The only thing left is to actually alert somewhere about what has happened. 
 
-Logic apps have nice connectors with email services, so I chose _Gmail - Send Email_ action specifying my email address and passing _File Content_ from the previous step to the body of the message.
+Logic apps have nice connectors with email services. I chose _Gmail - Send Email_ action specifying my email address and passing _File Content_ from the previous step to the body of the message.
 
-In the end, the whole logic app looks like this:
+Eventually, the whole logic app looks like this:
 ![Whole app]({{ site.baseurl }}/images/post-1/whole-app.png "Whole app")
 
-And if something bad happens in my application, in the end of that hour I receive a message like this:
+If something bad happens, in the end of that hour I receive a message like this:
 ![Log alert]({{ site.baseurl }}/images/post-1/log-alert.png "Log alert")
 
-Formatting is not beautiful but the main thing is this message says what has happened and when.
+Formatting is not pretty but the main thing is that message says what happened and when.
 
 ## Conclusions
 
-So, I would note the following positive moments about my solution:
-* The Logic App seems clear and, well, logical
-* There is some space left for configuration, e.g. the task can be fired more often, the letter can be nicer formatted and so on
-* Little code is required, only one small function with 6 lines of code. No need to track or maintain it
+So, I would note the following pros of my solution:
+* The Logic App seems clear and, well, logical.
+* There is some space for configuration, e.g. the task can be fired more often, the letter can be nicer formatted and so on.
+* Little code is required, only one small function with 6 lines of code. No need to track or to maintain it. No cross-cutting concerns code in the app.
 
 Some drawbacks:
-* 5 steps in the logic app for such a task can seem to be an overkill
-* It is a timer-driven app instead of event-driven. If there is nothing new in the blob storage, failed requests (blobs not found) mess up activity log. Responsibility of checking if the blob is new would lie on the designer of this Logic App.
+* 5 steps in the logic app for such a task can still seem to be an overkill.
+* It is a timer-driven app instead of event-driven. If there is nothing new in the blob storage, failed requests (blobs not found) mess up Logic App activity log. Responsibility of checking if the blob is new  would lie on Logic App's designer.
 
-Although from the first glance it may seem that Azure services can do everything for you, they may be not as flexible as wanted. There is still some space for inner services' integration improvement. Also, I do not really feel comfortable with the idea _"there is more than one way to do it"_ which drives Azure services, but this is obviously a matter of taste.
+Although at the first glance it may seem that Azure services can do everything for you, they may be not as flexible as wanted. There is still some space for inner services' integration improvement. 
+
+Also, I do not really feel comfortable with the idea _"there is more than one way to do it"_ which drives Azure services, but this is obviously a matter of taste.
