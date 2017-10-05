@@ -3,19 +3,19 @@ layout: post
 title: Error alerting in Azure
 ---
 
-So you have a service running in Azure and at one point you decide it is high time to start logging errors you have and to get somehow notified about them.
+So, you have a service running in Azure and at one point you decide it is high time to start logging errors you have and to get somehow notified about them.
 
-Azure has some astonishing amount of things inside that often could be integrated with each other. I suppose there are many ways to do the same task using different Azure components and those solutions eventually differ mostly in price and flexibility. So, in this post, I am going to describe one way of reaching the goal from the title and to specify its advantages and disadvantages.
+Azure has some astonishing number of things inside that often could be integrated with each other. I suppose there are many ways to do the same task using different Azure components and those solutions eventually differ mostly in price and flexibility. So, in this post, I am going to describe one way of reaching the goal from the title and to specify its advantages and disadvantages.
 
 ## 1. Start logging to Azure
 
-Usually in .NET for logging purposes one uses some third-part library like NLog, log4net or SeriLog which all have simple APIs and may differ in the way to set up the logger. For F#, a special library exists called [Logary](https://github.com/logary/logary). 
+Usually in .NET for logging purposes one uses some third-part library like _NLog_, _log4net_ or _SeriLog_ which all have simple APIs and may differ in the way to set up the logger. For F#, a special library exists called [Logary](https://github.com/logary/logary). 
 
 But with Azure things can be even simpler, you do not have to install any third-party stuff to get it working. Two things need to be done.
 
 ### 1.1 Turn on logging in the Azure app
 
-Go to the app, then Monitoring -> Diagnosting Logs -> Application logging (blob):
+Go to the app, then Monitoring -> Diagnostics Logs -> Application logging (blob):
 ![Azure Logging Settings]({{ site.baseurl }}/images/post-1/azure-logging-settings.png "Azure Logging Settings")
 
 Turn it on and set Storage Settings. Right from this window it is possible to create a Blob Storage where all the errors will go.
@@ -40,7 +40,7 @@ Another good thing about `Trace` class methods is that when the app is running l
 
 ### So close...
 
-Logic Apps are about intergrating so at first I decided to look if there already exists some trigger about Blob Storages. I searched for "Blob Storage" and... Yes it does exist!
+Logic Apps are about integrating so at first I decided to look if there already exists some trigger about Blob Storages. I searched for "Blob Storage" and... Yes it does exist!
 ![Blob storage trigger]({{ site.baseurl }}/images/post-1/blob-storage-trigger.png "Blob storage trigger")
 
 Seems to be just the right thing. But here is the problem. One needs to specify the exact container path there:
@@ -48,7 +48,7 @@ Seems to be just the right thing. But here is the problem. One needs to specify 
 
 It is not possible in this case because with time blobs keep appearing in new folders. The format of their paths is _/year/month/day/hour/_, so new folders may appear every hour. I was desperate to find some wildcards but all in vain. 
 
-So I had to find less elegant solution. I read [this article](http://www.chrisjohnson.io/2016/04/24/parsing-azure-blob-storage-logs-using-azure-functions/) where the guy basically faced the same problem but his approach of solving it seemed too cumbersome for me and too much coding for such a task. I applied a different approach.
+So, I had to find less elegant solution. I read [this article](http://www.chrisjohnson.io/2016/04/24/parsing-azure-blob-storage-logs-using-azure-functions/) where the guy basically faced the same problem but his approach of solving it seemed too cumbersome for me and too much coding for such a task. I applied a different approach.
 
 ### 2.1 Manually schedule the task
 
@@ -59,14 +59,14 @@ Set it to run every hour in the end of the hour.
 
 ### 2.2 Write Azure Function to format blob path
 
-So it should be a dumb function basically returning current date and time in some specific format. There are many templates for Azure Functions and not all of them are pluggable to Logic Apps. The simplest working thing is _HttpTrigger_. Choose your language and come up with a clear name like GetPathToBlobs.
+So, it should be a dumb function basically returning current date and time in some specific format. There are many templates for Azure Functions and not all of them are pluggable to Logic Apps. The simplest working thing is _HttpTrigger_. Choose your language and come up with a clear name like GetPathToBlobs.
 
 Remove all the boilerplate, function should be trivial. This is my code in F#:
 ![Azure Function code]({{ site.baseurl }}/images/post-1/azure-function-code.png "Azure function code")
 
 A few things to consider:
 * Do not remove parameter from the function, it will not compile or will fail in the runtime
-* Use two-digit formatting for months because Azure logging infrastructure puts september logs in the folder _09_ not _9_
+* Use two-digit formatting for months because Azure logging infrastructure puts September logs in the folder _09_ not _9_
 * Use capital _HH_ formatting for hours because Azure logging infrastructure puts 2 p.m. logs in the folder _14_ not _2_ or _02_
 
 ### 2.3 Connect Azure Function to the Logic App
@@ -103,7 +103,7 @@ In the end, the whole logic app looks like this:
 And if something bad happens in my application, in the end of that hour I receive a message like this:
 ![Log alert]({{ site.baseurl }}/images/post-1/log-alert.png "Log alert")
 
-Formatting is not beatiful but the main thing is this message says what has happened and when.
+Formatting is not beautiful but the main thing is this message says what has happened and when.
 
 ## Conclusions
 
@@ -116,4 +116,4 @@ Some drawbacks:
 * 5 steps in the logic app for such a task can seem to be an overkill
 * It is a timer-driven app instead of event-driven. If there is nothing new in the blob storage, failed requests (blobs not found) mess up activity log. Responsibility of checking if the blob is new would lie on the designer of this Logic App.
 
-Although from the first glance it may seem that Azure services can do everything for you, in reality they may be not as flexible as wanted. There is still some space for inner services' integration improvement. Also, I do not really feel comfortable with the idea _"there is more than one way to do it"_ which definitely drives Azure services, but this is obviously a matter of taste.
+Although from the first glance it may seem that Azure services can do everything for you, they may be not as flexible as wanted. There is still some space for inner services' integration improvement. Also, I do not really feel comfortable with the idea _"there is more than one way to do it"_ which drives Azure services, but this is obviously a matter of taste.
