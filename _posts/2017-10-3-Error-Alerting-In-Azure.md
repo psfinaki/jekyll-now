@@ -79,7 +79,7 @@ A few things to consider:
 
 ### 2.3 Connect Azure Function to the Logic App
 
-I searched for Azure Functions actions and selected the function written in the previous step:  
+I searched for Azure Functions actions and selected the function from the previous step:  
 ![Connecting function to logic app]({{ site.baseurl }}/images/post-1/connecting-function-to-logic-app.png "Connecting function to logic app")
 
 No advanced parameters are needed, no input is to be specified.
